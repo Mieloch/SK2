@@ -10,6 +10,8 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include "protocol.h"
+#include "measure.h"
 
 #define SERVER_PORT 1234
 #define QUEUE_SIZE 5
@@ -65,15 +67,20 @@ int main(int argc, char* argv[])
 
            printf("%s: [connection from %s]\n",
                   argv[0], inet_ntoa((struct in_addr)stClientAddr.sin_addr));
-           time_t now;
-           struct tm *local;
-           time (&now);
-           local = localtime(&now);
-           char buffer[50];
-           int n;
-           n = sprintf(buffer, "%s\n", asctime(local));
-           write(nClientSocket, buffer, n);
-           close(nClientSocket);
+           
+           struct client_request *request = malloc(sizeof(struct client_request));
+           read(nClientSocket, request, sizeof(struct client_request));
+           printf("%d\n", request->code); 	   
+	   if(request->code == GET_CPU_USAGE){
+		printf("CPU_USAGE\n");
+		int cpu_usage = get_cpu_usage();
+
+		printf("wrote %d\n",cpu_usage);
+		write(nClientSocket, &cpu_usage, sizeof(int));
+		printf("wrote %d\n",cpu_usage);
+	   }
+
+	   close(nClientSocket);
        }
 
    close(nSocket);

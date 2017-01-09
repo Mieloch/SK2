@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-int cpu_usage(void) {
+int get_cpu_usage(void) {
 	FILE *pp;
 	pp = popen("top -b -n 1 | tail -n +8 | awk '{ sum += $9 } END {print sum }'", "r");
 	if (pp != NULL) {
@@ -17,6 +17,3 @@ int cpu_usage(void) {
 	return -1;
 }
 
-int main(void){
-printf("cpu usage = %d%%\n", cpu_usage());
-}
