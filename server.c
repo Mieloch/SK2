@@ -16,6 +16,7 @@
 
 #define SERVER_PORT 1234
 #define QUEUE_SIZE 5
+
 void handle_cpu_usage_request(int clientSocket){
 	printf("CPU_USAGE\n");
 	int cpu_usage = get_cpu_usage();
@@ -23,6 +24,21 @@ void handle_cpu_usage_request(int clientSocket){
 	write(clientSocket, &cpu_usage, sizeof(int));
 	printf("wrote %d\n",cpu_usage);
 }
+
+void handle_python_job(int clientSocket, char *arg[]){
+	wchar_t *program = Py_DecodeLocale(arg[0], NULL);
+	if(program == NULL){
+		fprintf(stderr, "Fatal error: cannot decode arg[0]\n");
+		exit(1);
+	}
+	Py_SetProgramName(program);
+	Py_Initialize();
+	PyRun_SimpleString("print('Hello World')\n");
+	Py_Finalize();
+	PyMem_RawFree(program);
+	write(clientSocket, "done", sizeof(char)*4);
+}
+
 void process_request(int clientSocket){
            
            
