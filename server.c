@@ -49,11 +49,11 @@ void handle_execute_job_request(int clientSocket){
 	Py_SetProgramName(program);
 	Py_Initialize();
 	PyRun_SimpleString("for i in range(10):\n"
-				"print(test + str(i))\n");
+				"\tprint('test' + str(i))\n");
 	Py_Finalize();
 	PyMem_RawFree(program);
 	char* response = "done";
-	int n = write(clientSocket, &response, 5* sizeof(char));
+	int n = write(clientSocket, response, 5* sizeof(char));
 	printf("write %d\n",n);
 	
 }
