@@ -17,14 +17,6 @@
 #define SERVER_PORT 1234
 #define QUEUE_SIZE 5
 
-void handle_cpu_usage_request(int clientSocket){
-	printf("CPU_USAGE\n");
-	int cpu_usage = get_cpu_usage();
-	printf("wrote %d\n",cpu_usage);
-	write(clientSocket, &cpu_usage, sizeof(int));
-	printf("wrote %d\n",cpu_usage);
-}
-
 void run_python_job(char *name){
 	wchar_t *program = Py_DecodeLocale(name, NULL);
 	if(program == NULL){
@@ -36,6 +28,15 @@ void run_python_job(char *name){
 	PyRun_SimpleString("print('Hello World')\n");
 	Py_Finalize();
 	PyMem_RawFree(program);
+}
+
+void handle_cpu_usage_request(int clientSocket){
+	printf("CPU_USAGE\n");
+	int cpu_usage = get_cpu_usage();
+	printf("wrote %d\n",cpu_usage);
+	write(clientSocket, &cpu_usage, sizeof(int));
+	printf("wrote %d\n",cpu_usage);
+	run_python_job("test");
 }
 
 void handle_execute_job_request(int clientSocket){
