@@ -41,7 +41,7 @@ void run_python_job(char *name){
 void handle_execute_job_request(int clientSocket){
 	printf("EXECUTE_JOB\n");
 	char* response = "abcdefg";
-	int n = write(clientSocket, &response, 5* sizeof(char));
+	int n = write(clientSocket, response, 5* sizeof(char));
 	printf("write %d\n",n);
 	
 }
