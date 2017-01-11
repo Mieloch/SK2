@@ -25,10 +25,10 @@ void handle_cpu_usage_request(int clientSocket){
 	printf("wrote %d\n",cpu_usage);
 }
 
-void handle_python_job(int clientSocket, char *arg[]){
-	wchar_t *program = Py_DecodeLocale(arg[0], NULL);
+void run_python_job(char *name){
+	wchar_t *program = Py_DecodeLocale(name, NULL);
 	if(program == NULL){
-		fprintf(stderr, "Fatal error: cannot decode arg[0]\n");
+		fprintf(stderr, "Fatal error: cannot decode name\n");
 		exit(1);
 	}
 	Py_SetProgramName(program);
@@ -36,17 +36,36 @@ void handle_python_job(int clientSocket, char *arg[]){
 	PyRun_SimpleString("print('Hello World')\n");
 	Py_Finalize();
 	PyMem_RawFree(program);
-	write(clientSocket, "done", sizeof(char)*4);
+}
+
+void handle_execute_job_request(int clientSocket){
+	printf("EXECUTE_JOB\n");
+	char* response = "abcdefg";
+	int n = write(clientSocket, &response, 5* sizeof(char));
+	printf("write %d\n",n);
+	
+}
+
+int reverse(int num)
+{
+return ((num>>24)&0xff) | // move byte 3 to byte 0
+                    ((num<<8)&0xff0000) | // move byte 1 to byte 2
+                    ((num>>8)&0xff00) | // move byte 2 to byte 1
+                    ((num<<24)&0xff000000);
 }
 
 void process_request(int clientSocket){
-           
-           
            struct client_request *request = malloc(sizeof(struct client_request));
-           read(clientSocket, request, sizeof(struct client_request));
-           printf("%d\n", request->code); 	   
+
+           int n = read(clientSocket, request, (sizeof(struct client_request)));
+	   request->code = reverse(request->code);
+
+           printf("\ncode = %d\n", request->code);
+	   printf("payload = %s\n", request->payload);  	   
 	   if(request->code == GET_CPU_USAGE){
 		handle_cpu_usage_request(clientSocket);
+	   }else if(request->code == EXECUTE_JOB){
+		handle_execute_job_request(clientSocket);
 	   }
 }
 int main(int argc, char* argv[])
