@@ -13,6 +13,7 @@ measure.o: measure.c
 client: client.c
 	gcc -o client client.c
 
-.PHONY clean
+.PHONY: clean
+
 clean:
 	rm *.o
