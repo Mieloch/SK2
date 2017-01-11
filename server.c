@@ -22,14 +22,32 @@ void handle_cpu_usage_request(int clientSocket){
 	write(clientSocket, &cpu_usage, sizeof(int));
 	printf("wrote %d\n",cpu_usage);
 }
+void handle_execute_job_request(int clientSocket){
+	printf("EXECUTE_JOB\n");
+	char* response = "abcdefg";
+	int n = write(clientSocket, &response, 5* sizeof(char));
+	printf("write %d\n",n);
+	
+}
+int reverse(int num)
+{
+return ((num>>24)&0xff) | // move byte 3 to byte 0
+                    ((num<<8)&0xff0000) | // move byte 1 to byte 2
+                    ((num>>8)&0xff00) | // move byte 2 to byte 1
+                    ((num<<24)&0xff000000);
+}
 void process_request(int clientSocket){
-           
-           
            struct client_request *request = malloc(sizeof(struct client_request));
-           read(clientSocket, request, sizeof(struct client_request));
-           printf("%d\n", request->code); 	   
+
+           int n = read(clientSocket, request, (sizeof(struct client_request)));
+	   request->code = reverse(request->code);
+
+           printf("\ncode = %d\n", request->code);
+	   printf("payload = %s\n", request->payload);  	   
 	   if(request->code == GET_CPU_USAGE){
 		handle_cpu_usage_request(clientSocket);
+	   }else if(request->code == EXECUTE_JOB){
+		handle_execute_job_request(clientSocket);
 	   }
 }
 int main(int argc, char* argv[])
