@@ -41,7 +41,7 @@ int main ()
 		exit (EXIT_FAILURE);
 	}
         struct client_request *request = malloc(sizeof(struct client_request));
-	request->code = 0;	
+	request->code = EXECUTE_JOB;	
 	write (sck, request, sizeof(struct client_request));
 	while ((odp = read (sck, &bufor, sizeof(int))) > 0)
 		printf("\n%d\n",bufor);

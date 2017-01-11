@@ -17,7 +17,7 @@
 #define SERVER_PORT 1234
 #define QUEUE_SIZE 5
 
-void run_python_job(char *name){
+void run_python_hello_world(char *name){
 	wchar_t *program = Py_DecodeLocale(name, NULL);
 	if(program == NULL){
 		fprintf(stderr, "Fatal error: cannot decode name\n");
@@ -36,12 +36,23 @@ void handle_cpu_usage_request(int clientSocket){
 	printf("wrote %d\n",cpu_usage);
 	write(clientSocket, &cpu_usage, sizeof(int));
 	printf("wrote %d\n",cpu_usage);
-	run_python_job("test");
 }
 
 void handle_execute_job_request(int clientSocket){
 	printf("EXECUTE_JOB\n");
-	char* response = "abcdefg";
+
+	wchar_t *program = Py_DecodeLocale("server", NULL);
+	if(program == NULL){
+		fprintf(stderr, "Fatal error: DecodeLocale failure\n");
+		exit(1);
+	}
+	Py_SetProgramName(program);
+	Py_Initialize();
+	PyRun_SimpleString("for i in range(10):\n"
+				"print(test + str(i))\n");
+	Py_Finalize();
+	PyMem_RawFree(program);
+	char* response = "done";
 	int n = write(clientSocket, &response, 5* sizeof(char));
 	printf("write %d\n",n);
 	
@@ -69,6 +80,7 @@ void process_request(int clientSocket){
 		handle_execute_job_request(clientSocket);
 	   }
 }
+
 int main(int argc, char* argv[])
 {
    int nSocket, nClientSocket;
