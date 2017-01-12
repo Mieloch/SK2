@@ -31,14 +31,11 @@ void run_python_hello_world(char *name){
 }
 
 void handle_cpu_usage_request(int clientSocket){
-	printf("CPU_USAGE\n");
 	int cpu_usage = get_cpu_usage();
-	printf("wrote %d\n",cpu_usage);
 	write(clientSocket, &cpu_usage, sizeof(int));
-	printf("wrote %d\n",cpu_usage);
 }
 
-void handle_execute_job_request(int clientSocket){
+void handle_execute_job_request(int clientSocket, char* script){
 	printf("EXECUTE_JOB\n");
 
 	wchar_t *program = Py_DecodeLocale("server", NULL);
@@ -48,14 +45,11 @@ void handle_execute_job_request(int clientSocket){
 	}
 	Py_SetProgramName(program);
 	Py_Initialize();
-	PyRun_SimpleString("for i in range(10):\n"
-				"\tprint('test' + str(i))\n");
+	PyRun_SimpleString(script);
 	Py_Finalize();
 	PyMem_RawFree(program);
 	char* response = "done";
-	int n = write(clientSocket, response, 5* sizeof(char));
-	printf("write %d\n",n);
-	
+	write(clientSocket, response, 4* sizeof(char));
 }
 
 int reverse(int num)
@@ -69,15 +63,16 @@ return ((num>>24)&0xff) | // move byte 3 to byte 0
 void process_request(int clientSocket){
            struct client_request *request = malloc(sizeof(struct client_request));
 
-           int n = read(clientSocket, request, (sizeof(struct client_request)));
+           read(clientSocket, request, (sizeof(struct client_request)));
 	   request->code = reverse(request->code);
 
-           printf("\ncode = %d\n", request->code);
-	   printf("payload = %s\n", request->payload);  	   
+
+
 	   if(request->code == GET_CPU_USAGE){
 		handle_cpu_usage_request(clientSocket);
 	   }else if(request->code == EXECUTE_JOB){
-		handle_execute_job_request(clientSocket);
+	   	printf("script payload = %s\n", request->payload);  	   
+		handle_execute_job_request(clientSocket,request->payload);
 	   }
 }
 
@@ -119,6 +114,7 @@ int main(int argc, char* argv[])
        fprintf(stderr, "%s: Can't set queue size.\n", argv[0]);
    }
 
+	printf("Server started\n");
    while(1)
    {
        /* block for connection request */
@@ -129,7 +125,7 @@ int main(int argc, char* argv[])
            fprintf(stderr, "%s: Can't create a connection's socket.\n", argv[0]);
            exit(1);
        }
-       printf("%s: [connection from %s]\n", argv[0], inet_ntoa((struct in_addr)stClientAddr.sin_addr));
+      // printf("%s: [connection from %s]\n", argv[0], inet_ntoa((struct in_addr)stClientAddr.sin_addr));
        process_request(nClientSocket);
        close(nClientSocket);
    }
