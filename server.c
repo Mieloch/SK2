@@ -48,11 +48,16 @@ void handle_execute_job_request(int clientSocket, char* script)
 	}
 	Py_SetProgramName(program);
 	Py_Initialize();
+	clock_t start = clock();
 	PyRun_SimpleString(script);
+	clock_t stop = clock();
 	Py_Finalize();
 	PyMem_RawFree(program);
-	char* response = "done";
-	write(clientSocket, response, 4* sizeof(char));
+	double time_elapsed = (double)(stop - start) / CLOCKS_PER_SEC;
+	int time_elapsed_ms = (int)(time_elapsed);
+	char response[20];
+	sprintf(response, "%d", time_elapsed_ms);
+	write(clientSocket, response, 20 * sizeof(char));
 }
 
 int reverse(int num)
