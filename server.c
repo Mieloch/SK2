@@ -57,7 +57,8 @@ void handle_execute_job_request(int clientSocket, char* script)
 	int time_elapsed_ms = (int)(time_elapsed);
 	char response[20];
 	sprintf(response, "%d", time_elapsed_ms);
-	write(clientSocket, response, 20 * sizeof(char));
+	printf("\nresponse = %s\n\n", response);	
+write(clientSocket, response, strlen(response) * sizeof(char));
 }
 
 int reverse(int num)
